@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Waypoints in directions</title>
+    <style>
+      html, body, #map-canvas {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+      }
+      #panel {
+        position: absolute;
+        top: 50px;
+        left: 80%;
+        margin-left: -180px;
+        z-index: 10;
+        background-color: #fff;
+        padding: 5px;
+        border: 2px solid #999;
+      }
+      #converter_space{
+        height: 100px;
+        width: X;
+      }
+      #navigation_space{
+        height: 500;
+        width: X;
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
+    <script>
+var directionsDisplay;
+var directionsService = new google.maps.DirectionsService();
+var map;
+
+function convert(){
+  var mapping={}
+  mapping['ABL'] = "Anderson Biological Laboratories"
+  mapping.ACC = "Anderson-Clarke Center"
+  mapping.AEL = "Abercrombie Engineering Laboratory"
+  mapping.ANH = "Anderson Hall, M.D"
+  mapping.APB = "Brown Hall, Alice Pratt"
+  mapping.BKH = "Baker Hall, James A.III"
+  mapping.BNC = "Brown College"
+  mapping.BRC = "BioScience Research Collaborative"
+  mapping.BRK = "Brockman Hall for Physics"
+  mapping.COH = "Cohen House"
+  mapping.DBH = "Butcher Hall, Dell"
+  mapping.DCC = "Duncan College"
+  mapping.DCH = "Duncan Hall, Anne and Charles"
+  mapping.FON = "Fondren Library"
+  mapping.GRB = "Brown Hall, George R"
+  mapping.GRW = "Gibbs Recreation and Wellness Center"
+  mapping.HAM = "Hamman Hall"
+  mapping.HBH = "Brown Hall for Mathematical Sciences, Herman"
+  mapping.HNZ = "Hanszen College, Harry Clay"
+  mapping.HRG = "Herring Hall, Robert R"
+  mapping.HRZ = "Herzstein Hall"
+  mapping.HUM = "Humanitites Building"
+  mapping.KCK = "Keck hall, Howard"
+  mapping.KWG = "Keith-Wiess Geological Laboratories"
+  mapping.LEY = "Ley Student Center"
+  mapping.LVC = "Lovett College"
+  mapping.MCN = "Mcnair Hall, Janice and Robert"
+  mapping.MEB = "Mechanical Engineering Building"
+  mapping.MED = "Media Center"
+  mapping.MEL = "Mechanical Laboratory"
+  mapping.MLC = "Martel College"
+  mapping.MUD = "Mudd Computer Science Laboratory"
+  mapping.NSV = "North Servery"
+  mapping.OED = "Oshman Engineering Design Kitchen"
+  mapping.POL = "Police Department"
+  mapping.RMC = "Rice Memorial Center"
+  mapping.RYN = "Ryon Engineering Laboratory"
+  mapping.RZR = "Rayzor Hall"
+  mapping.SEW = "Sewal Hall"
+  mapping.SST = "Space Science and Technology Building"
+  mapping.SSV = "South Servery"
+  mapping.STA = "Rice Stadium"
+  mapping.TUD = "Tudor Fieldhouse"
+  mapping.WSC = "Wiess College, Harry C"
+  mapping.WSV = "West Servery"
+  var buildingCode = document.getElementById('BuildingCode').value
+  var buildingCode = buildingCode.toUpperCase()
+  if (mapping[buildingCode] == undefined){
+    document.getElementById("return_converted_1").innerHTML = "WARNING: ".bold()+"This building code is not from Rice, please check again"
+  }else{
+  document.getElementById("return_converted_1").innerHTML = "The full name of " + buildingCode.bold() + " is ";
+  document.getElementById("return_converted_2").innerHTML = mapping[buildingCode].bold()
+  }
+}
+
+
+
+function initialize() {
+  directionsDisplay = new google.maps.DirectionsRenderer();
+  var Houston = new google.maps.LatLng(29.7174464,-95.4020334);
+  var mapOptions = {
+    zoom: 16,
+    center: Houston
+  }
+  map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+  directionsDisplay.setMap(map);
+
+  // if(navigator.geolocation) {
+  //   navigator.geolocation.getCurrentPosition(function(position) {
+  //     var pos = new google.maps.LatLng(position.coords.latitude,
+  //                                      position.coords.longitude);
+
+  //     var infowindow = new google.maps.InfoWindow({
+  //       map: map,
+  //       position: pos,
+  //       content: 'Location found using HTML5.'
+  //     });
+
+  //     map.setCenter(pos);
+  //   }, function() {
+  //     handleNoGeolocation(true);
+  //   });
+  // } else g    // Browser doesn't support Geolocation
+  //   handleNoGeolocation(false);
+
+}
+
+function calcRoute() {
+  var start = document.getElementById('start').value;
+  if (start == "current_location"){
+    var start = document.getElementById("current_location_test").innerHTML
+    var temp = start
+    var temp1 = start
+    var start_new = temp.substring(39,56);
+    var start_new2 = temp.substring(71,89);
+    var start = start_new + "," + start_new2;
+    document.getElementById("test11").innerHTML = start;
+    }
+  var end = document.getElementById('end').value;
+
+  var request = {
+      origin: start,
+      destination: end,
+      //waypoints: waypts,
+      //optimizeWaypoints: true,
+      travelMode: google.maps.TravelMode.WALKING
+  };
+  directionsService.route(request, function(response, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+      var route = response.routes[0];
+      var summaryPanel = document.getElementById('directions_panel');
+      summaryPanel.innerHTML = '';
+      // For each route, display summary information.
+      for (var i = 0; i < route.legs.length; i++) {
+        var routeSegment = i + 1;
+        summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment + '</b><br>';
+        summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
+        summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
+        summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
+      }
+    }
+  });
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+
+var options1 = {
+  enableHighAccuracy: true,
+  timeout: 5000,
+  maximumAge: 0
+};
+
+function success1(pos) {
+  var crd = pos.coords;
+  text_shown = "Your current location is:" + "<br>" + "Latitude: " + crd.latitude + "<br>" + "Longitude: " + crd.longitude; 
+  document.getElementById("current_location_test").innerHTML = text_shown
+  console.log('Your current position is:');
+  console.log('Latitude : ' + crd.latitude);
+  console.log('Longitude: ' + crd.longitude);
+  console.log('More or less ' + crd.accuracy + ' meters.');
+};
+
+function error1(err) {
+  console.warn('ERROR(' + err.code + '): ' + err.message);
+};
+
+navigator.geolocation.getCurrentPosition(success1, error1, options1);
+
+    </script>
+  </head>
+  <body>
+    <div id="map-canvas" style="float:left;width:70%;height:100%;"></div>
+    <div id="control_panel" style="float:right;width:30%;text-align:left;padding-top:20px">
+    <div style="margin:20px;border-width:2px;">
+    <b> Building Code Converter </b>
+    <div> <input type="text" id="BuildingCode" placeholder="Enter the Building Code you want to convert here"></div>
+    <div> <input type="submit" value="convert" onclick="convert()"> </div>
+    <p id="current_location_test"></p>
+    <p id="test11"></p>
+    <div id="converter_space">
+      <p id="return_converted_1"></p>
+      <p id="return_converted_2"></p>
+    </div>
+    <div id="converted_result" style="margin:20px;background-color:#FFEE77;"></div>
+    </div>
+    <div style="margin:20px;border-width:2px;">
+    <b>Start:</b>
+    <select id="start">
+      <option value = "current_location">Current Location</option>
+      <option value = "29.718644,-95.402363">Anderson Biological Laboratories, M.D.(ABL)</option>
+      <option value = "Anderson-Clarke Center, Glasscock School of Continuing Studies, 6100 Main Street, Houston, TX 77005">Anderson-Clarke Center(ACC)</option>
+      <option value = "29.720835,-95.399238">Abercrombie Engineering Laboratory(AEL)</option>
+      <option value = "29.718839,-95.399724">Anderson Hall, M.D.(ANH)</option>
+      <option value = "29.716184,-95.405019">Brown Hall, Alice Pratt(APB)</option>
+      <option value = "James A. Baker III Institute for Public Policy">Baker Hall, James A.(BKH)</option>
+      <option value = "29.7209409,-95.3963168">Brown College, Margrett Root(BNC)</option>
+      <option value = "BioScience Research Collaborative">BioScience Research Collaborative(BRC)</option>
+      <option value = "29.719743,-95.40162">Brockman Hall For Physics(BRK)</option>
+      <option value = "29.717802,-95.397179">Cohen House(COH)</option>
+      <option value = "Butcher Hall">Butcher Hall, Dell(DBH)</option>
+      <option value = "29.7216708,-95.3983119">Duncan College(DCC)</option>
+      <option value = "Duncan Hall">Duncan Hall(DCH)</option>
+      <option value = "29.718155,-95.400121">Fondren Library(FON)</option>
+      <option value = "29.7190039,-95.4012268">Brown Hall, George R.(GRB)</option>
+      <option value = "Gibbs Recreation and Wellness Center, Barbara and David">Gibbs Recreation and Wellness Center, Barbara and David(GRW)</option>
+      <option value = "Hamman Hall">Hamman Hall(HAM)</option>
+      <option value = "Herman Brown Hall For Mathematical Sciences">Herman Brown Hall For Mathematical Sciences(HBH)</option>
+      <option value = "Hanszen College">Hanszen College(HNZ)</option>
+      <option value = "29.7171225,-95.4011201">Herring Hall(HRG)</option>
+      <option value = "29.7191644,-95.3984407">Herzstein Hall(HRZ)</option>
+      <option value = "29.7177142,-95.3996878">Humanities Building(HUM)</option>
+      <option value = "keck hall Rice University">Keck Hall, Howard(KCK)</option>
+      <option value="29.719307,-95.402432">Keith-Wiess Geological Laboratories(KWG)</option>
+      <option value="29.717909,-95.402367">Ley Student Center(LEY)</option>
+      <option value="29.716558,-95.398044">Lovett College, Edgar Odell(LVC)</option>
+      <option value="29.717565,-95.403168">McNair Hall, Janice and Robert(MCN)</option>
+      <option value="29.72017,-95.400333">Mechanical Engineering Building(MEB)</option> 
+      <option value="29.720901,-95.400038">Mechanical Laboratory(MEL)</option>
+      <option value="29.713674,-95.405695">Media Center(MED)</option>
+      <option value="29.722112,-95.397689">Martel College, Marian and Speros R.(MLC)</option>
+      <option value="29.720448,-95.401159">Mudd Computer Science Building(MUD)</option>
+      <option value="29.721883,-95.396546">North Servery(NSV)</option>
+      <option value="29.721128,-95.401309">Oshman Engineering Design Kitchen(OED)</option>
+      <option value="29.718022,-95.399035">Rayzor Hall(RZR)</option>
+      <option value="29.718372,-95.397861">Sewall Hall(SEW)</option>
+      <option value="29.719879,-95.402536">Space Science and Technology Building(SST)</option>
+      <option value="29.715484,-95.401024">South Servery(SSV)</option>
+      <option value="29.716289,-95.409318">Rice Stadium(STA)</option>
+      <option value="29.715102,-95.404138">Tudor Fieldhouse and Youngkin Center(TUD)</option>
+      <option value="29.714992,-95.400661">Wiess College, Harry C.(WSC)</option>
+      <option value="29.721063,-95.398481">West Servery(WSV)</option>
+    </select>
+    <br>
+    <b>Waypoints:</b> <br>
+    <i>(Ctrl-Click for multiple selection)</i> <br>
+    <select multiple id="waypoints">
+      <option value="29.7216964,-95.3989622">Duncan College</option>
+      <option value="toronto, ont">Toronto, ONT</option>
+      <option value="chicago, il">Chicago</option>
+      <option value="winnipeg, mb">Winnipeg</option>
+      <option value="fargo, nd">Fargo</option>
+      <option value="calgary, ab">Calgary</option>
+      <option value="spokane, wa">Spokane</option>
+    </select>
+    <br>
+    <b>End:</b>
+    <select id="end">
+      <option value = "29.718644,-95.402363">Anderson Biological Laboratories, M.D.(ABL)</option>
+      <option value = "Anderson-Clarke Center, Glasscock School of Continuing Studies, 6100 Main Street, Houston, TX 77005">Anderson-Clarke Center(ACC)</option>
+      <option value = "29.720835,-95.399238">Abercrombie Engineering Laboratory(AEL)</option>
+      <option value = "29.718839,-95.399724">Anderson Hall, M.D.(ANH)</option>
+      <option value = "29.716184,-95.405019">Brown Hall, Alice Pratt(APB)</option>
+      <option value = "James A. Baker III Institute for Public Policy">Baker Hall, James A.(BKH)</option>
+      <option value = "29.7209409,-95.3963168">Brown College, Margrett Root(BNC)</option>
+      <option value = "BioScience Research Collaborative">BioScience Research Collaborative(BRC)</option>
+      <option value = "29.719743,-95.40162">Brockman Hall For Physics(BRK)</option>
+      <option value = "29.717802,-95.397179">Cohen House(COH)</option>
+      <option value = "Butcher Hall">Butcher Hall, Dell(DBH)</option>
+      <option value = "29.7216708,-95.3983119">Duncan College(DCC)</option>
+      <option value = "Duncan Hall">Duncan Hall(DCH)</option>
+      <option value = "29.718155,-95.400121">Fondren Library(FON)</option>
+      <option value = "29.7190039,-95.4012268">Brown Hall, George R.(GRB)</option>
+      <option value = "Gibbs Recreation and Wellness Center, Barbara and David">Gibbs Recreation and Wellness Center, Barbara and David(GRW)</option>
+      <option value = "Hamman Hall">Hamman Hall(HAM)</option>
+      <option value = "Herman Brown Hall For Mathematical Sciences">Herman Brown Hall For Mathematical Sciences(HBH)</option>
+      <option value = "Hanszen College">Hanszen College(HNZ)</option>
+      <option value = "29.7171225,-95.4011201">Herring Hall(HRG)</option>
+      <option value = "29.7191644,-95.3984407">Herzstein Hall(HRZ)</option>
+      <option value = "29.7177142,-95.3996878">Humanities Building(HUM)</option>
+      <option value = "keck hall Rice University">Keck Hall, Howard(KCK)</option>
+      <option value="29.719307,-95.402432">Keith-Wiess Geological Laboratories(KWG)</option>
+      <option value="29.717909,-95.402367">Ley Student Center(LEY)</option>
+      <option value="29.716558,-95.398044">Lovett College, Edgar Odell(LVC)</option>
+      <option value="29.717565,-95.403168">McNair Hall, Janice and Robert(MCN)</option>
+      <option value="29.72017,-95.400333">Mechanical Engineering Building(MEB)</option> 
+      <option value="29.720901,-95.400038">Mechanical Laboratory(MEL)</option>
+      <option value="29.713674,-95.405695">Media Center(MED)</option>
+      <option value="29.722112,-95.397689">Martel College, Marian and Speros R.(MLC)</option>
+      <option value="29.720448,-95.401159">Mudd Computer Science Building(MUD)</option>
+      <option value="29.721883,-95.396546">North Servery(NSV)</option>
+      <option value="29.721128,-95.401309">Oshman Engineering Design Kitchen(OED)</option>
+      <option value="29.718022,-95.399035">Rayzor Hall(RZR)</option>
+      <option value="29.718372,-95.397861">Sewall Hall(SEW)</option>
+      <option value="29.719879,-95.402536">Space Science and Technology Building(SST)</option>
+      <option value="29.715484,-95.401024">South Servery(SSV)</option>
+      <option value="29.716289,-95.409318">Rice Stadium(STA)</option>
+      <option value="29.715102,-95.404138">Tudor Fieldhouse and Youngkin Center(TUD)</option>
+      <option value="29.714992,-95.400661">Wiess College, Harry C.(WSC)</option>
+      <option value="29.721063,-95.398481">West Servery(WSV)</option>
+    </select>
+    <br>
+      <input type="submit" onclick="calcRoute();">
+    </div>
+    <div id="directions_panel" style="margin:20px;background-color:#FFEE77;"></div>
+    </div>
+  </div>
+  </body>
+</html>
